@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamers Family</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="./firebaseConfig.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Gamers Family</h1>
+    </header>
+
+    <div>
+        <button id="fetchUsersBtn" class="small-button">Mostrar Usuarios</button>
+
+        <h2>Registro e Inicio de Sesión</h2>
+
+        <div class="form-section">
+            <div>
+                <input type="text" id="userName" placeholder="Nombre del usuario">
+                <input type="email" id="email" placeholder="Correo electrónico">
+                <input type="password" id="password" placeholder="Contraseña">
+                <button id="registerBtn">Registrarse</button>
+            </div>
+
+            <div>
+                <input type="email" id="loginEmail" placeholder="Correo electrónico">
+                <input type="password" id="loginPassword" placeholder="Contraseña">
+                <button id="loginBtn">Iniciar Sesión</button>
+            </div>
+        </div>
+
+        <ul id="userList"></ul>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebaseConfig.js';
+        import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
+        import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            const userName = document.getElementById('userName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                await addDoc(collection(db, 'users'), { name: userName });
+                alert('Usuario registrado con éxito');
+            } catch (error) {
+                alert('Error en el registro: ' + error.message);
+            }
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                alert('Inicio de sesión exitoso');
+            } catch (error) {
+                alert('Error en el inicio de sesión: ' + error.message);
+            }
+        });
+
+        document.getElementById('fetchUsersBtn').addEventListener('click', async () => {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+
+            const querySnapshot = await getDocs(collection(db, 'users'));
+            querySnapshot.forEach((doc) => {
+                const li = document.createElement('li');
+                li.textContent = doc.data().name;
+                userList.appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>
